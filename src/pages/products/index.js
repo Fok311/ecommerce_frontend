@@ -1,83 +1,132 @@
-import React from 'react';
-import { Typography, Divider, Button, FormControl, InputLabel, Select, MenuItem, Card, CardContent, Grid } from '@mui/material';
-import Container from "@mui/material/Container";
-import { getCategory } from '../../utils/api_category';
-import { useQuery } from '@tanstack/react-query';
 import { useState } from "react";
-import { getProducts } from '../../utils/api';
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import {
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+  Box,
+  Container,
+} from "@mui/material";
+import ProductCard from "../../components/ProductCard";
+import { useQuery } from "@tanstack/react-query";
+import { getCategory } from "../../utils/api_category";
+import { getProducts } from "../../utils/api";
+
 
 export default function Products() {
-    const [category, setCategory] = useState("all");
+  const navigate = useNavigate();
+  const [category, setCategory] = useState("all");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(6);
+  // load the categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => getCategory(),
+  });
 
-    const { data: categories= [] } = useQuery({ queryKey: ['category'], queryFn: getCategory })
-    const { data: rows = [] } = useQuery({ queryKey: ['products', category], queryFn: () => getProducts(category) });
+  // load the products
+  const { data: products = [] } = useQuery({
+    queryKey: ["products", category, perPage, page],
+    queryFn: () => getProducts(category, perPage, page),
+  });
 
-    return (
-        <Container>
-            <Typography variant="h6" component="div" sx={{ textAlign: 'center', marginTop: '20px', fontWeight: 'bold', fontSize: '40px' }}>
-                Welcome to My Store
+  return (
+    <Container>
+      <Header />
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Typography
+          sx={{
+            marginLeft: "10px",
+            marginTop: "10px",
+            fontWeight: "bold",
+            fontSize: "24px",
+          }}
+        >
+          Products
+        </Typography>
+        <Button
+          variant="contained"
+          sx={{
+            marginLeft: "auto",
+            marginRight: "10px",
+            marginTop: "10px",
+            backgroundColor: "#1BA930",
+          }}
+          onClick={() => {
+            navigate("/add");
+          }}
+        >
+          Add New
+        </Button>
+      </div>
+      <FormControl
+        sx={{ marginTop: "10px", width: "200px", marginLeft: "10px" }}
+      >
+        <InputLabel id="product-select-label">Product</InputLabel>
+        <Select
+          labelId="product-select-label"
+          id="product-select"
+          label="Product"
+          value={category}
+          onChange={(event) => {
+            setCategory(event.target.value);
+            // reset the page to 1
+            setPage(1);
+          }}
+        >
+          <MenuItem value="all">All</MenuItem>
+          {categories.map((category) => {
+            return (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            );
+          })}
+        </Select>
+      </FormControl>
+      <Grid container spacing={3}>
+        {products.map((product) => (
+          <Grid key={product._id} item xs={12} md={6} lg={4}>
+            <ProductCard product={product} />
+          </Grid>
+        ))}
+        {products.length === 0 ? (
+          <Grid item xs={12}>
+            <Typography align="center" sx={{ padding: "10px 0" }}>
+              No items found.
             </Typography>
-            <Divider />
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-                <Typography sx={{ marginLeft: '10px', marginTop: '10px', fontWeight: 'bold', fontSize: '24px' }}>Products</Typography>
-                <Button variant="contained" sx={{ marginLeft: 'auto', marginRight: '10px', marginTop: '10px', backgroundColor: '#1BA930'  }}>Add New</Button>
-            </div>
-            <FormControl sx={{ marginTop: '10px', width: '200px', marginLeft: '10px' }}>
-                <InputLabel id="product-select-label">Product</InputLabel>
-                <Select
-                    labelId="product-select-label"
-                    id="product-select"
-                    label="Product"
-                    value={category}
-                    onChange={(event) => {
-                        setCategory(event.target.value)
-                    }}
-                >
-                <MenuItem value="all">All</MenuItem>
-              {categories.map(category => {
-                return <MenuItem key={category} value={category}>{category}</MenuItem>
-              })}
-                </Select>
-            </FormControl>
-            <Grid container spacing={3}>
-                {rows.map(row => (
-                    <Grid item key={row._id} xs={12} sm={6} md={4}>
-                        <Card sx={{ marginTop: '10px'}}>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom>
-                                    {row.name}
-                                </Typography>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                                    <div>
-                                        <Typography variant="body1" component="div" sx={{
-                                            backgroundColor: '#C3FDB8', borderRadius: 3,
-                                            display: 'inline-block', padding: '1px 20px', color: '#41A317'}}>
-                                            {row.price}
-                                        </Typography>
-                                    </div>
-                                    <div>
-                                        <Typography variant="body1" component="div" sx={{
-                                            backgroundColor: '#F8B88B', borderRadius: 3,
-                                            display: 'inline-block', padding: '1px 20px', color: '#F87431'}}>
-                                            {row.category}
-                                        </Typography>
-                                    </div>
-                                    
-                                </div> 
-                                <Button variant="contained" fullWidth color="primary" sx={{ marginTop: '20px' }}>Add to Cart</Button>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                                    <div>
-                                    <Button variant="contained" color="info" sx={{ borderRadius: 5 }}>Edit</Button>
-                                    </div>
-                                    <div>
-                                    <Button variant="contained" color="error" sx={{ borderRadius: 5 }}>Delete</Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
-        </Container>
-    );
+          </Grid>
+        ) : null}
+      </Grid>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px",
+          marginTop: "10px",
+          padding: "20px 0",
+        }}
+      >
+        <Button
+          disabled={page === 1 ? true : false}
+          onClick={() => setPage(page - 1)}
+        >
+          Previous
+        </Button>
+        <span>Page: {page}</span>
+        <Button
+          disabled={products.length === 0 ? true : false}
+          onClick={() => setPage(page + 1)}
+        >
+          Next
+        </Button>
+      </Box>
+    </Container>
+  );
 }

@@ -1,4 +1,4 @@
-
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header"
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -18,6 +18,7 @@ export default function Carts(props) {
     const { data: rows = [] } = useQuery({ queryKey: ['cart'], queryFn: () => getCart() });
     const { enqueueSnackbar } = useSnackbar();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     
     const deleteCartMutation = useMutation({
@@ -81,7 +82,7 @@ export default function Carts(props) {
                     </TableCell>
                     <TableCell>{row.price}</TableCell>
                     <TableCell align="center">{row.quantity}</TableCell>
-                    <TableCell align="right">${row.price * row.quantity}</TableCell>
+                    <TableCell align="right">${(row.price * row.quantity).toFixed(2)}</TableCell>
                     <TableCell align="right">
                         <Button variant="contained" style={{ backgroundColor: "red", color: "white" }} onClick={() => handleCartDelete(row._id)}>
                             Remove
@@ -94,14 +95,18 @@ export default function Carts(props) {
                 <TableCell colSpan={3} />
                 <TableCell align="right">
                     <Typography variant="body1" fontWeight="bold">
-                        ${rows.reduce((total, row) => total + (row.price * row.quantity), 0)}
+                        ${rows.reduce((totalprice, row) => totalprice + (row.price * row.quantity), 0).toFixed(2)}
                     </Typography>
                 </TableCell>
             </TableRow>
             </TableBody>
             </Table>
             </TableContainer>
-            <Button variant="contained" color="primary" style={{ position: "absolute",marginTop: "30px", right: "20px" }}>
+            <Button variant="contained" color="primary" style={{ position: "absolute", marginTop: "30px", right: "20px" }}
+                onClick={() => {
+                    navigate("/checkout");
+                  }}            
+            >
                 Checkout
             </Button>
         </>

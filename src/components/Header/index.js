@@ -5,6 +5,16 @@ import { Link, useLocation } from "react-router-dom";
 
 export default function Header() {
   const location = useLocation();
+
+  let pageTitle = "Welcome to My Store";
+
+  if (location.pathname === "/cart") {
+    pageTitle = "Cart";
+  } else if (location.pathname === "/checkout") {
+    pageTitle = "Checkout";
+  } else if (location.pathname === "/orders") {
+    pageTitle = "My Orders"
+  }
   return (
     <>
       <Typography
@@ -16,8 +26,7 @@ export default function Header() {
           fontWeight: "bold",
           fontSize: "40px",
         }}
-      >
-        {location.pathname === "/cart" ? "Cart" : "Welcome to My Store"}
+      >{pageTitle}
       </Typography>
       <div style={{ display: "flex", justifyContent: "center", marginBottom:"20px" }}>
         <Button variant="contained" color="primary" sx={{ margin: "0 10px" }} component={Link} to="/">
@@ -25,6 +34,9 @@ export default function Header() {
         </Button>
         <Button variant="contained" color="primary" sx={{ margin: "0 10px" }} component={Link} to="/cart">
           Cart
+        </Button>
+        <Button variant="contained" color="primary" sx={{ margin: "0 10px" }} component={Link} to="/orders">
+          My Orders
         </Button>
       </div>
       <Divider />

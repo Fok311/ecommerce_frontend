@@ -147,7 +147,11 @@ export default function Order() {
                     <TableCell align="right">
                     <Button 
                         variant="contained" 
-                        style={{ backgroundColor: "red", color: "white", display: order.status === "pending" ? "none" : "" }} 
+                        style={{ 
+                            backgroundColor: "red", 
+                            color: "white", 
+                            display: order.status === "pending" ? "" : "none" // Adjusted this line
+                        }} 
                         onClick={() => handleOrderDelete(order._id)} 
                         disabled={order.status === "pending"}
                     >
